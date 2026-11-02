@@ -1,4 +1,5 @@
 import os
+import argparse
 
 from dotenv import load_dotenv
 from openai import OpenAI
@@ -14,17 +15,21 @@ client = OpenAI(
 if api_key is None:
     raise Exception("Cannot find API Key")
 
-response = client.chat.completions.create(
-    model="openrouter/free",
-    messages=[
-        {
-            "role": "user",
-            "content": "Why is Boot.dev such a great place to learn backend development? Use one paragraph maximum.",
-        }
-    ]
-)
-
 def main():
+    parser = argparse.ArgumentParser(description="Chatbot")
+    parser.add_argument("user_prompt", type=str, help="User Prompt")
+    args = parser.parse_args()
+
+    response = client.chat.completions.create(
+        model="openrouter/free",
+        messages=[
+            {
+                "role": "user",
+                "content": args.user_prompt,
+            }
+        ]
+    )
+
     if response.usage is None:
         raise RuntimeError("API response has failed")
 
