@@ -1,4 +1,5 @@
 import os
+
 from dotenv import load_dotenv
 from openai import OpenAI
 
@@ -24,6 +25,13 @@ response = client.chat.completions.create(
 )
 
 def main():
+    if response.usage is None:
+        raise RuntimeError("API response has failed")
+
+    prompt_tokens = response.usage.prompt_tokens 
+    response_tokens = response.usage.completion_tokens
+
+    print(f"Prompt tokens: {prompt_tokens}\nResponse tokens: {response_tokens}")
     print(response.choices[0].message.content)
 
 
