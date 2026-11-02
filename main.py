@@ -18,6 +18,7 @@ if api_key is None:
 def main():
     parser = argparse.ArgumentParser(description="Chatbot")
     parser.add_argument("user_prompt", type=str, help="User Prompt")
+    parser.add_argument("--verbose", action="store_true", help="Enable Verbosse Output")
     args = parser.parse_args()
 
     messages = [
@@ -35,7 +36,10 @@ def main():
     prompt_tokens = response.usage.prompt_tokens 
     response_tokens = response.usage.completion_tokens
 
-    print(f"Prompt tokens: {prompt_tokens}\nResponse tokens: {response_tokens}")
+    if args.verbose:
+        print(f"User prompt: {args.user_prompt}")
+        print(f"Prompt tokens: {prompt_tokens}\nResponse tokens: {response_tokens}")
+
     print(response.choices[0].message.content)
 
 
