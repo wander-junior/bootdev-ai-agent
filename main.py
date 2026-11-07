@@ -19,6 +19,7 @@ client = OpenAI(
 if api_key is None:
     raise Exception("Cannot find API Key")
 
+
 def main():
     parser = argparse.ArgumentParser(description="Chatbot")
     parser.add_argument("user_prompt", type=str, help="User Prompt")
@@ -30,35 +31,43 @@ def main():
         {"role": "user", "content": args.user_prompt},
     ]
 
-    response = client.chat.completions.create(
-        model="openrouter/free",
-        messages=messages,
-        tools=available_functions
-    )
+    for i in range(20):
+        response = client.chat.completions.create(
+            model="openrouter/free",
+            messages=messages,
+            tools=available_functions
+        )
 
-    if response.usage is None:
-        raise RuntimeError("API response has failed")
+        if response.usage is None:
+            raise RuntimeError("API response has failed")
 
-    prompt_tokens = response.usage.prompt_tokens 
-    response_tokens = response.usage.completion_tokens
+        prompt_tokens = response.usage.prompt_tokens 
+        response_tokens = response.usage.completion_tokens
 
-    if args.verbose:
-        print(f"User prompt: {args.user_prompt}")
-        print(f"Prompt tokens: {prompt_tokens}\nResponse tokens: {response_tokens}")
+        if args.verbose:
+            print(f"Prompt: {args.user_prompt}")
+            print(f"Prompt tokens: {prompt_tokens}\nResponse tokens: {response_tokens}")
 
-    message = response.choices[0].message
+        message = response.choices[0].message
+        messages.append(message)
 
-    if message.tool_calls is None or len(message.tool_calls) == 0:
-        print(message.content)
-    else:
-        for tool_call in message.tool_calls:
-            result_message = call_function(tool_call, args.verbose)
-            
-            if result_message == "":
-                raise ValueError("Function returned an empty string")
+        if message.tool_calls is None or len(message.tool_calls) == 0:
+            print(f"Final response: \n {message.content}")
+            break
+        else:
+            if i == 19:
+                print("Error: Maximum iterations reached")
+                exit(1)
 
-            if args.verbose:
-                print(f"-> {result_message['content']}")
+            for tool_call in message.tool_calls:
+                result_message = call_function(tool_call, args.verbose)
+                messages.append(result_message)
+
+                if result_message == "":
+                    raise ValueError("Function returned an empty string")
+
+                if args.verbose:
+                    print(f"-> {result_message['content']}")
 
 
 if __name__ == "__main__":
